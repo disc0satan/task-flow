@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PRIORITIES } from '../utils/taskUtils.js';
 
-export default function TaskForm({ onAdd }) {
+export default function TaskForm({ onAdd, onCancel }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState('medium');
@@ -42,6 +42,7 @@ export default function TaskForm({ onAdd }) {
       <input
         id="new-title"
         type="text"
+        autoFocus
         value={title}
         maxLength={255}
         placeholder="What needs doing?"
@@ -86,9 +87,14 @@ export default function TaskForm({ onAdd }) {
         </p>
       )}
 
-      <button type="submit" className="btn btn-primary" disabled={saving}>
-        {saving ? 'Adding…' : 'Add task'}
-      </button>
+      <div className="form-actions">
+        <button type="submit" className="btn btn-primary" disabled={saving}>
+          {saving ? 'Adding…' : 'Add task'}
+        </button>
+        <button type="button" className="btn" onClick={onCancel}>
+          Cancel
+        </button>
+      </div>
     </form>
   );
 }

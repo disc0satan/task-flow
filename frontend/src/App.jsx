@@ -10,6 +10,7 @@ export default function App() {
   const [filter, setFilter] = useState('all');
   const [loadState, setLoadState] = useState('loading');
   const [message, setMessage] = useState('');
+  const [showForm, setShowForm] = useState(false);
 
   async function loadTasks() {
     setLoadState('loading');
@@ -26,6 +27,13 @@ export default function App() {
     loadTasks();
   }, []);
 
+  useEffect(() => {
+    if (!showForm) return undefined;
+    const closeOnEscape = (event) => event.key === 'Escape' && setShowForm(false);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => document.removeEventListener('keydown', closeOnEscape);
+  }, [showForm]);
+
   const replaceTask = (updated) =>
     setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
 
@@ -41,6 +49,7 @@ export default function App() {
   const handleAdd = async (input) => {
     const created = await taskService.createTask(input);
     setTasks((prev) => [created, ...prev]);
+    setShowForm(false);
   };
 
   const handleSave = async (id, changes) => {
@@ -72,8 +81,6 @@ export default function App() {
         <p>{counts.pending} pending, {counts.completed} completed</p>
       </header>
 
-      <TaskForm onAdd={handleAdd} />
-
       {message && (
         <p className="banner" role="alert">
           {message}
@@ -101,6 +108,22 @@ export default function App() {
             onDelete={handleDelete}
           />
         </>
+      )}
+
+      <button type="button" className="fab" onClick={() => setShowForm(true)}>
+        <span aria-hidden="true">+</span> Add task
+      </button>
+
+      {showForm && (
+        <div
+          className="modal-backdrop"
+          onMouseDown={(e) => e.target === e.currentTarget && setShowForm(false)}
+        >
+          <div className="modal" role="dialog" aria-modal="true" aria-labelledby="add-task-heading">
+            <h2 id="add-task-heading">New task</h2>
+            <TaskForm onAdd={handleAdd} onCancel={() => setShowForm(false)} />
+          </div>
+        </div>
       )}
     </main>
   );

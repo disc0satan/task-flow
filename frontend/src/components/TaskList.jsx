@@ -1,7 +1,7 @@
 import TaskItem from './TaskItem.jsx';
 
 const EMPTY_MESSAGES = {
-  all: 'No tasks yet. Add your first task above.',
+  all: 'No tasks yet. Use the Add task button to create your first one.',
   pending: 'Nothing pending. Every task is done.',
   completed: 'No completed tasks yet.',
 };
