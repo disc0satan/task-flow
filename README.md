@@ -21,6 +21,8 @@ A personal task manager. Add, edit, complete, filter and delete tasks, stored in
 - Add, edit (inline) and delete tasks (with a confirmation step)
 - Toggle pending / completed with a checkbox
 - Filter by All, Pending, Completed
+- Priority (Low / Medium / High) with tasks sorted by priority
+- Optional due date, with overdue pending tasks highlighted in red
 - Validation on both the client and the API (empty title returns `400`)
 - Mobile-responsive layout
 
@@ -71,7 +73,7 @@ task-flow/
 cd backend
 cp .env.example .env        # then paste your Neon string into DATABASE_URL
 npm install
-npm run db:init             # creates the tasks table (safe to re-run)
+npm run db:init             # creates or upgrades the tasks table (safe to re-run)
 npm run dev                 # API on http://localhost:4000
 ```
 
@@ -108,8 +110,8 @@ All responses are JSON. Success: `{ "data": ... }`. Errors: `{ "error": { "messa
 | Method | Endpoint                | Body                              | Success | Errors   |
 | ------ | ----------------------- | --------------------------------- | ------- | -------- |
 | GET    | `/api/tasks`            |                                   | 200     | 500      |
-| POST   | `/api/tasks`            | `{ title, description? }`         | 201     | 400, 500 |
-| PUT    | `/api/tasks/:id`        | `{ title?, description?, status? }` | 200   | 400, 404, 500 |
+| POST   | `/api/tasks`            | `{ title, description?, priority?, due_date? }` | 201     | 400, 500 |
+| PUT    | `/api/tasks/:id`        | `{ title?, description?, status?, priority?, due_date? }` | 200   | 400, 404, 500 |
 | PATCH  | `/api/tasks/:id/toggle` |                                   | 200     | 400, 404, 500 |
 | DELETE | `/api/tasks/:id`        |                                   | 200     | 400, 404, 500 |
 
@@ -142,8 +144,17 @@ Run `npm run db:init` once locally against the same Neon database before first u
 
 _Replace with an honest note, for example: "I used Claude to scaffold the initial structure, then reviewed, ran and modified the code myself."_ Be ready to explain every file in the interview.
 
+`priority` is `low`, `medium` (default) or `high`. `due_date` is `YYYY-MM-DD` or `null`/`""` for none. `GET /api/tasks` returns tasks ordered by priority, then newest first.
+
+## Bonus checklist
+
+- [x] Filter bar (All / Pending / Completed)
+- [x] Due date with overdue highlighting
+- [x] Backend unit tests (`backend/tests/tasks.test.js`, run with `npm test`)
+- [x] Priority field with sort by priority
+- [ ] Deployed (follow "Deploy to Vercel" and paste the URLs at the top)
+
 ## Known limitations / next steps
 
-- Due dates and priority are not implemented.
 - Frontend has no automated tests.
 - No pagination on `GET /api/tasks`.

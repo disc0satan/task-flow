@@ -3,6 +3,7 @@ import FilterBar from './components/FilterBar.jsx';
 import TaskForm from './components/TaskForm.jsx';
 import TaskList from './components/TaskList.jsx';
 import * as taskService from './services/taskService.js';
+import { sortTasks } from './utils/taskUtils.js';
 
 export default function App() {
   const [tasks, setTasks] = useState([]);
@@ -60,8 +61,9 @@ export default function App() {
     pending: tasks.filter((t) => t.status === 'pending').length,
     completed: tasks.filter((t) => t.status === 'completed').length,
   };
-  const visibleTasks =
-    filter === 'all' ? tasks : tasks.filter((t) => t.status === filter);
+  const visibleTasks = sortTasks(
+    filter === 'all' ? tasks : tasks.filter((t) => t.status === filter)
+  );
 
   return (
     <main className="app">

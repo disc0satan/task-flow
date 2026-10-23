@@ -11,6 +11,8 @@ const sampleTask = {
   title: 'Write README',
   description: null,
   status: 'pending',
+  priority: 'medium',
+  due_date: null,
   created_at: '2026-01-01T10:00:00.000Z',
   updated_at: '2026-01-01T10:00:00.000Z',
 };
@@ -25,7 +27,41 @@ describe('POST /api/tasks', () => {
 
     expect(res.status).toBe(201);
     expect(res.body.data).toEqual(sampleTask);
-    expect(Task.create).toHaveBeenCalledWith({ title: 'Write README', description: null });
+    expect(Task.create).toHaveBeenCalledWith({
+      title: 'Write README',
+      description: null,
+      priority: 'medium',
+      due_date: null,
+    });
+  });
+
+  it('stores priority and due date when provided', async () => {
+    Task.create.mockResolvedValue(sampleTask);
+
+    const res = await request(app)
+      .post('/api/tasks')
+      .send({ title: 'Pay rent', priority: 'high', due_date: '2026-11-05' });
+
+    expect(res.status).toBe(201);
+    expect(Task.create).toHaveBeenCalledWith({
+      title: 'Pay rent',
+      description: null,
+      priority: 'high',
+      due_date: '2026-11-05',
+    });
+  });
+
+  it('rejects an invalid priority with 400', async () => {
+    const res = await request(app).post('/api/tasks').send({ title: 'x', priority: 'urgent' });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects an impossible due date with 400', async () => {
+    const res = await request(app).post('/api/tasks').send({ title: 'x', due_date: '2026-02-31' });
+
+    expect(res.status).toBe(400);
+    expect(Task.create).not.toHaveBeenCalled();
   });
 
   it('rejects an empty title with 400', async () => {
@@ -55,6 +91,15 @@ describe('PUT /api/tasks/:id', () => {
     const res = await request(app).put('/api/tasks/99').send({ title: 'New title' });
 
     expect(res.status).toBe(404);
+  });
+
+  it('clears a due date when given an empty value', async () => {
+    Task.update.mockResolvedValue(sampleTask);
+
+    const res = await request(app).put('/api/tasks/1').send({ due_date: '' });
+
+    expect(res.status).toBe(200);
+    expect(Task.update).toHaveBeenCalledWith(1, { due_date: null });
   });
 
   it('rejects an invalid status with 400', async () => {

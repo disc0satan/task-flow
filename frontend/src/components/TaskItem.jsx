@@ -1,24 +1,23 @@
 import { useState } from 'react';
-
-const formatDate = (iso) =>
-  new Date(iso).toLocaleDateString(undefined, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
+import { PRIORITIES, formatDate, isOverdue, priorityLabel } from '../utils/taskUtils.js';
 
 export default function TaskItem({ task, onToggle, onSave, onDelete }) {
   const [mode, setMode] = useState('view'); // 'view' | 'edit' | 'confirm-delete'
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description ?? '');
+  const [priority, setPriority] = useState(task.priority);
+  const [dueDate, setDueDate] = useState(task.due_date ?? '');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
   const isCompleted = task.status === 'completed';
+  const overdue = isOverdue(task);
 
   function startEdit() {
     setTitle(task.title);
     setDescription(task.description ?? '');
+    setPriority(task.priority);
+    setDueDate(task.due_date ?? '');
     setError('');
     setMode('edit');
   }
@@ -32,7 +31,12 @@ export default function TaskItem({ task, onToggle, onSave, onDelete }) {
 
     setSaving(true);
     try {
-      await onSave(task.id, { title: title.trim(), description: description.trim() });
+      await onSave(task.id, {
+        title: title.trim(),
+        description: description.trim(),
+        priority,
+        due_date: dueDate || null,
+      });
       setMode('view');
     } catch (err) {
       setError(err.message);
@@ -61,6 +65,31 @@ export default function TaskItem({ task, onToggle, onSave, onDelete }) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
+          <div className="field-row">
+            <div>
+              <label htmlFor={`priority-${task.id}`}>Priority</label>
+              <select
+                id={`priority-${task.id}`}
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+              >
+                {PRIORITIES.map(({ value, label }) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor={`due-${task.id}`}>Due date</label>
+              <input
+                id={`due-${task.id}`}
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+              />
+            </div>
+          </div>
           {error && (
             <p className="field-error" role="alert">
               {error}
@@ -79,8 +108,12 @@ export default function TaskItem({ task, onToggle, onSave, onDelete }) {
     );
   }
 
+  const classes = ['task', isCompleted && 'is-completed', overdue && 'is-overdue']
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <li className={`task${isCompleted ? ' is-completed' : ''}`}>
+    <li className={classes}>
       <input
         type="checkbox"
         className="check"
@@ -92,8 +125,18 @@ export default function TaskItem({ task, onToggle, onSave, onDelete }) {
       <div className="task-body">
         <p className="task-title">{task.title}</p>
         {task.description && <p className="task-description">{task.description}</p>}
+
         <p className="task-meta">
-          {isCompleted ? 'Completed' : 'Pending'}, added {formatDate(task.created_at)}
+          <span className={`chip chip-${task.priority}`}>{priorityLabel(task.priority)} priority</span>
+          {task.due_date && (
+            <span className={overdue ? 'due is-overdue' : 'due'}>
+              {overdue ? 'Overdue: ' : 'Due '}
+              {formatDate(task.due_date)}
+            </span>
+          )}
+          <span>
+            {isCompleted ? 'Completed' : 'Pending'}, added {formatDate(task.created_at)}
+          </span>
         </p>
 
         {mode === 'confirm-delete' ? (

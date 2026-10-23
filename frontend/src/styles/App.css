@@ -51,6 +51,8 @@ label {
 }
 
 input[type='text'],
+input[type='date'],
+select,
 textarea {
   width: 100%;
   padding: 0.6rem 0.75rem;
@@ -63,6 +65,18 @@ textarea {
 
 textarea {
   resize: vertical;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+@media (max-width: 420px) {
+  .field-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 input[aria-invalid='true'] {
@@ -220,10 +234,44 @@ input[aria-invalid='true'] {
   overflow-wrap: anywhere;
 }
 
+.task.is-overdue {
+  border-left-color: var(--danger);
+}
+
 .task-meta {
-  margin: 0.35rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  margin: 0.4rem 0 0;
   font-size: 0.8rem;
   color: var(--muted);
+}
+
+.chip {
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.chip-high {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.chip-medium {
+  background: #fdf3dc;
+  color: #7a5200;
+}
+
+.chip-low {
+  background: #e6ecf0;
+  color: #3d5566;
+}
+
+.due.is-overdue {
+  color: var(--danger);
+  font-weight: 600;
 }
 
 .task-actions {

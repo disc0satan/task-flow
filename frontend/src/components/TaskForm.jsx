@@ -1,8 +1,11 @@
 import { useState } from 'react';
+import { PRIORITIES } from '../utils/taskUtils.js';
 
 export default function TaskForm({ onAdd }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [priority, setPriority] = useState('medium');
+  const [dueDate, setDueDate] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -16,9 +19,16 @@ export default function TaskForm({ onAdd }) {
     setSaving(true);
     setError('');
     try {
-      await onAdd({ title: title.trim(), description: description.trim() });
+      await onAdd({
+        title: title.trim(),
+        description: description.trim(),
+        priority,
+        due_date: dueDate || null,
+      });
       setTitle('');
       setDescription('');
+      setPriority('medium');
+      setDueDate('');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -47,6 +57,28 @@ export default function TaskForm({ onAdd }) {
         value={description}
         onChange={(e) => setDescription(e.target.value)}
       />
+
+      <div className="field-row">
+        <div>
+          <label htmlFor="new-priority">Priority</label>
+          <select id="new-priority" value={priority} onChange={(e) => setPriority(e.target.value)}>
+            {PRIORITIES.map(({ value, label }) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="new-due">Due date (optional)</label>
+          <input
+            id="new-due"
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+          />
+        </div>
+      </div>
 
       {error && (
         <p id="new-title-error" className="field-error" role="alert">

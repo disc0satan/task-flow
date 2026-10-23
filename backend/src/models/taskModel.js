@@ -1,19 +1,24 @@
 import { pool } from '../config/db.js';
 
-const COLUMNS = 'id, title, description, status, created_at, updated_at';
-const UPDATABLE_FIELDS = ['title', 'description', 'status'];
+// due_date is returned as a plain 'YYYY-MM-DD' string to avoid timezone shifts.
+const COLUMNS = `id, title, description, status, priority,
+  to_char(due_date, 'YYYY-MM-DD') AS due_date, created_at, updated_at`;
+const UPDATABLE_FIELDS = ['title', 'description', 'status', 'priority', 'due_date'];
 
 export async function findAll() {
   const { rows } = await pool.query(
-    `SELECT ${COLUMNS} FROM tasks ORDER BY created_at DESC, id DESC`
+    `SELECT ${COLUMNS} FROM tasks
+     ORDER BY CASE priority WHEN 'high' THEN 0 WHEN 'medium' THEN 1 ELSE 2 END,
+              created_at DESC, id DESC`
   );
   return rows;
 }
 
-export async function create({ title, description }) {
+export async function create({ title, description, priority, due_date }) {
   const { rows } = await pool.query(
-    `INSERT INTO tasks (title, description) VALUES ($1, $2) RETURNING ${COLUMNS}`,
-    [title, description]
+    `INSERT INTO tasks (title, description, priority, due_date)
+     VALUES ($1, $2, $3, $4) RETURNING ${COLUMNS}`,
+    [title, description, priority, due_date]
   );
   return rows[0];
 }
